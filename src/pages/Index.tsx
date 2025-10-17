@@ -1,12 +1,100 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useMemo } from 'react';
+import bibleData from '@/data/bible.json';
+import { BibleData } from '@/types/bible';
+import { BooksList } from '@/components/BibleReader/BooksList';
+import { ChaptersList } from '@/components/BibleReader/ChaptersList';
+import { ReadingPane } from '@/components/BibleReader/ReadingPane';
+import { SavedVersesSidebar } from '@/components/BibleReader/SavedVersesSidebar';
+import { SearchDialog } from '@/components/BibleReader/SearchDialog';
+import { useBibleStorage } from '@/hooks/useBibleStorage';
 
 const Index = () => {
+  const bible = bibleData as BibleData;
+  const books = Object.keys(bible);
+  
+  const [selectedBook, setSelectedBook] = useState<string | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  
+  const {
+    folders,
+    savedVerses,
+    createFolder,
+    deleteFolder,
+    saveVerse,
+    deleteVerse,
+  } = useBibleStorage();
+
+  const chapters = selectedBook ? Object.keys(bible[selectedBook]) : [];
+  const verses = selectedBook && selectedChapter ? bible[selectedBook][selectedChapter] : null;
+
+  const savedVerseKeys = useMemo(() => {
+    const keys = new Set<string>();
+    savedVerses.forEach(v => {
+      keys.add(`${v.book}-${v.chapter}-${v.verse}`);
+    });
+    return keys;
+  }, [savedVerses]);
+
+  const handleSelectBook = (book: string) => {
+    setSelectedBook(book);
+    setSelectedChapter(Object.keys(bible[book])[0]);
+  };
+
+  const handleVerseClick = (book: string, chapter: number) => {
+    setSelectedBook(book);
+    setSelectedChapter(chapter.toString());
+  };
+
+  const handleSearchResultClick = (book: string, chapter: string) => {
+    setSelectedBook(book);
+    setSelectedChapter(chapter);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="flex h-screen overflow-hidden">
+      <BooksList 
+        books={books} 
+        selectedBook={selectedBook} 
+        onSelectBook={handleSelectBook} 
+      />
+      
+      {selectedBook && (
+        <ChaptersList 
+          chapters={chapters} 
+          selectedChapter={selectedChapter} 
+          onSelectChapter={setSelectedChapter} 
+        />
+      )}
+      
+      <ReadingPane 
+        book={selectedBook}
+        chapter={selectedChapter}
+        verses={verses}
+        folders={folders}
+        savedVerseKeys={savedVerseKeys}
+        onSaveVerse={saveVerse}
+        onSearch={() => setIsSearchOpen(true)}
+      />
+      
+      <SavedVersesSidebar 
+        folders={folders}
+        savedVerses={savedVerses}
+        selectedFolderId={selectedFolderId}
+        onSelectFolder={setSelectedFolderId}
+        onCreateFolder={createFolder}
+        onDeleteFolder={deleteFolder}
+        onDeleteVerse={deleteVerse}
+        onVerseClick={handleVerseClick}
+      />
+
+      <SearchDialog
+        open={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        bibleData={bible}
+        onResultClick={handleSearchResultClick}
+      />
     </div>
   );
 };
