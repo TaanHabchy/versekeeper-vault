@@ -44,7 +44,7 @@ export const SavedVersesSidebar = ({
   };
 
   const filteredVerses = selectedFolderId
-    ? savedVerses.filter(v => v.folderId === selectedFolderId)
+    ? savedVerses.filter(v => (v.folderId || v.folder_id) === selectedFolderId)
     : savedVerses;
 
   return (

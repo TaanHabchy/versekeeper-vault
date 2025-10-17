@@ -1,75 +1,172 @@
 import { useState, useEffect } from 'react';
 import { Folder, SavedVerse } from '@/types/bible';
-
-const FOLDERS_KEY = 'bible_folders';
-const VERSES_KEY = 'bible_verses';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 export const useBibleStorage = () => {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [savedVerses, setSavedVerses] = useState<SavedVerse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const storedFolders = localStorage.getItem(FOLDERS_KEY);
-    const storedVerses = localStorage.getItem(VERSES_KEY);
-    
-    if (storedFolders) setFolders(JSON.parse(storedFolders));
-    if (storedVerses) setSavedVerses(JSON.parse(storedVerses));
+    fetchFolders();
+    fetchVerses();
   }, []);
 
-  const saveToStorage = (key: string, data: any) => {
-    localStorage.setItem(key, JSON.stringify(data));
+  const fetchFolders = async () => {
+    const { data, error } = await supabase
+      .from('folders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: 'Error loading folders',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } else {
+      setFolders(data || []);
+    }
+    setLoading(false);
   };
 
-  const createFolder = (name: string, description?: string) => {
-    const newFolder: Folder = {
-      id: crypto.randomUUID(),
+  const fetchVerses = async () => {
+    const { data, error } = await supabase
+      .from('saved_verses')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: 'Error loading verses',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } else {
+      setSavedVerses(data || []);
+    }
+  };
+
+  const createFolder = async (name: string, description?: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const newFolder = {
+      user_id: user.id,
       name,
       description,
-      createdAt: Date.now(),
+      created_at: Date.now(),
     };
-    const updated = [...folders, newFolder];
-    setFolders(updated);
-    saveToStorage(FOLDERS_KEY, updated);
-    return newFolder;
+
+    const { data, error } = await supabase
+      .from('folders')
+      .insert(newFolder)
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: 'Error creating folder',
+        description: error.message,
+        variant: 'destructive'
+      });
+      return null;
+    }
+
+    setFolders([data, ...folders]);
+    return data;
   };
 
-  const deleteFolder = (folderId: string) => {
-    const updatedFolders = folders.filter(f => f.id !== folderId);
-    const updatedVerses = savedVerses.filter(v => v.folderId !== folderId);
-    setFolders(updatedFolders);
-    setSavedVerses(updatedVerses);
-    saveToStorage(FOLDERS_KEY, updatedFolders);
-    saveToStorage(VERSES_KEY, updatedVerses);
+  const deleteFolder = async (folderId: string) => {
+    const { error } = await supabase
+      .from('folders')
+      .delete()
+      .eq('id', folderId);
+
+    if (error) {
+      toast({
+        title: 'Error deleting folder',
+        description: error.message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setFolders(folders.filter(f => f.id !== folderId));
+    setSavedVerses(savedVerses.filter(v => v.folderId !== folderId));
   };
 
-  const saveVerse = (book: string, chapter: number, verse: number, text: string, folderId: string, notes?: string) => {
-    const newVerse: SavedVerse = {
-      id: crypto.randomUUID(),
-      folderId,
+  const saveVerse = async (book: string, chapter: number, verse: number, text: string, folderId: string, notes?: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const newVerse = {
+      user_id: user.id,
+      folder_id: folderId,
       book,
       chapter,
       verse,
       text,
       notes,
-      createdAt: Date.now(),
+      created_at: Date.now(),
     };
-    const updated = [...savedVerses, newVerse];
-    setSavedVerses(updated);
-    saveToStorage(VERSES_KEY, updated);
+
+    const { data, error } = await supabase
+      .from('saved_verses')
+      .insert(newVerse)
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: 'Error saving verse',
+        description: error.message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSavedVerses([data, ...savedVerses]);
   };
 
-  const deleteVerse = (verseId: string) => {
-    const updated = savedVerses.filter(v => v.id !== verseId);
-    setSavedVerses(updated);
-    saveToStorage(VERSES_KEY, updated);
+  const deleteVerse = async (verseId: string) => {
+    const { error } = await supabase
+      .from('saved_verses')
+      .delete()
+      .eq('id', verseId);
+
+    if (error) {
+      toast({
+        title: 'Error deleting verse',
+        description: error.message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSavedVerses(savedVerses.filter(v => v.id !== verseId));
   };
 
-  const moveVerse = (verseId: string, newFolderId: string) => {
-    const updated = savedVerses.map(v => 
+  const moveVerse = async (verseId: string, newFolderId: string) => {
+    const { error } = await supabase
+      .from('saved_verses')
+      .update({ folder_id: newFolderId })
+      .eq('id', verseId);
+
+    if (error) {
+      toast({
+        title: 'Error moving verse',
+        description: error.message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSavedVerses(savedVerses.map(v => 
       v.id === verseId ? { ...v, folderId: newFolderId } : v
-    );
-    setSavedVerses(updated);
-    saveToStorage(VERSES_KEY, updated);
+    ));
   };
 
   return {
@@ -80,5 +177,6 @@ export const useBibleStorage = () => {
     saveVerse,
     deleteVerse,
     moveVerse,
+    loading,
   };
 };

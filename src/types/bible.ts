@@ -15,11 +15,13 @@ export interface Folder {
 
 export interface SavedVerse {
   id: string;
-  folderId: string;
+  folderId?: string;
+  folder_id?: string;
   book: string;
   chapter: number;
   verse: number;
   text: string;
   notes?: string;
-  createdAt: number;
+  createdAt?: number;
+  created_at?: number;
 }

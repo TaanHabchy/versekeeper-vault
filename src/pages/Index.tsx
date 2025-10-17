@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import bibleData from '@/data/bible.json';
 import { BibleData } from '@/types/bible';
 import { BooksList } from '@/components/BibleReader/BooksList';
@@ -7,15 +8,43 @@ import { ReadingPane } from '@/components/BibleReader/ReadingPane';
 import { SavedVersesSidebar } from '@/components/BibleReader/SavedVersesSidebar';
 import { SearchDialog } from '@/components/BibleReader/SearchDialog';
 import { useBibleStorage } from '@/hooks/useBibleStorage';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 const Index = () => {
   const bible = bibleData as BibleData;
   const books = Object.keys(bible);
+  const navigate = useNavigate();
   
+  const [user, setUser] = useState<User | null>(null);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
   
   const {
     folders,
@@ -63,8 +92,19 @@ const Index = () => {
     }
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
+      <div className="absolute top-4 right-4 z-50">
+        <Button variant="outline" size="sm" onClick={handleLogout}>
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
+      </div>
+      
       <BooksList 
         books={books} 
         selectedBook={selectedBook} 
