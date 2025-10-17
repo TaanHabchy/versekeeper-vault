@@ -52,6 +52,17 @@ const Index = () => {
     setSelectedChapter(chapter);
   };
 
+  const handleNextChapter = () => {
+    if (!selectedBook || !selectedChapter) return;
+    
+    const currentChapters = Object.keys(bible[selectedBook]);
+    const currentIndex = currentChapters.indexOf(selectedChapter);
+    
+    if (currentIndex < currentChapters.length - 1) {
+      setSelectedChapter(currentChapters[currentIndex + 1]);
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       <BooksList 
@@ -76,6 +87,8 @@ const Index = () => {
         savedVerseKeys={savedVerseKeys}
         onSaveVerse={saveVerse}
         onSearch={() => setIsSearchOpen(true)}
+        chapters={chapters}
+        onNextChapter={handleNextChapter}
       />
       
       <SavedVersesSidebar 

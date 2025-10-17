@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Bookmark, BookmarkCheck, Search } from 'lucide-react';
@@ -15,6 +15,8 @@ interface ReadingPaneProps {
   savedVerseKeys: Set<string>;
   onSaveVerse: (book: string, chapter: number, verse: number, text: string, folderId: string) => void;
   onSearch: () => void;
+  chapters: string[];
+  onNextChapter: () => void;
 }
 
 export const ReadingPane = ({ 
@@ -24,10 +26,52 @@ export const ReadingPane = ({
   folders,
   savedVerseKeys,
   onSaveVerse,
-  onSearch
+  onSearch,
+  chapters,
+  onNextChapter
 }: ReadingPaneProps) => {
   const [selectedVerse, setSelectedVerse] = useState<{ verse: string; text: string } | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const scrollThreshold = useRef(0);
+
+  useEffect(() => {
+    const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (!scrollContainer) return;
+
+    let lastScrollTop = 0;
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const scrollHeight = scrollContainer.scrollHeight;
+      const clientHeight = scrollContainer.clientHeight;
+      const scrollBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Check if we're near the bottom (within 100px)
+      if (scrollBottom < 100 && scrollTop > lastScrollTop) {
+        setIsAtBottom(true);
+        scrollThreshold.current += scrollTop - lastScrollTop;
+
+        // If we've accumulated enough scroll momentum (200px), go to next chapter
+        if (scrollThreshold.current > 200 && chapter && chapters.length > 0) {
+          const currentIndex = chapters.indexOf(chapter);
+          if (currentIndex < chapters.length - 1) {
+            scrollThreshold.current = 0;
+            setIsAtBottom(false);
+            onNextChapter();
+          }
+        }
+      } else {
+        setIsAtBottom(false);
+        scrollThreshold.current = 0;
+      }
+
+      lastScrollTop = scrollTop;
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [chapter, chapters, onNextChapter]);
 
   if (!book || !chapter || !verses) {
     return (
@@ -63,7 +107,7 @@ export const ReadingPane = ({
         </div>
       </div>
       
-      <ScrollArea className="flex-1 p-8">
+      <ScrollArea ref={scrollAreaRef} className={cn("flex-1 p-8 transition-all", isAtBottom && "scroll-smooth")}>
         <div className="max-w-3xl mx-auto space-y-4">
           {Object.entries(verses).map(([verse, text]) => {
             const verseKey = `${book}-${chapter}-${verse}`;
