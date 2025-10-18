@@ -125,7 +125,6 @@ export const useBibleStorage = () => {
     const { data, error } = await supabase
       .from('saved_verses')
       .insert({
-        user_id: user.id,
         folder_id: parseInt(folderId),
         book,
         chapter,
