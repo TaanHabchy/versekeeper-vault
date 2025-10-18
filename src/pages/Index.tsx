@@ -56,7 +56,7 @@ const Index = () => {
   } = useBibleStorage();
 
   const chapters = selectedBook ? Object.keys(bible[selectedBook]) : [];
-  const verses = selectedBook && selectedChapter ? bible[selectedBook][selectedChapter] : null;
+  const allChapterVerses = selectedBook ? bible[selectedBook] : {};
 
   const savedVerseKeys = useMemo(() => {
     const keys = new Set<string>();
@@ -122,13 +122,12 @@ const Index = () => {
       <ReadingPane 
         book={selectedBook}
         chapter={selectedChapter}
-        verses={verses}
         folders={folders}
         savedVerseKeys={savedVerseKeys}
         onSaveVerse={saveVerse}
         onSearch={() => setIsSearchOpen(true)}
         chapters={chapters}
-        onNextChapter={handleNextChapter}
+        allChapterVerses={allChapterVerses}
       />
       
       <SavedVersesSidebar 

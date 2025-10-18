@@ -22,7 +22,6 @@ import { Folder } from '@/types/bible';
 interface ReadingPaneProps {
   book: string | null;
   chapter: string | null;
-  verses: { [verse: string]: string } | null;
   folders: Folder[];
   savedVerseKeys: Set<string>;
   onSaveVerse: (
@@ -34,7 +33,7 @@ interface ReadingPaneProps {
   ) => void;
   onSearch: () => void;
   chapters: string[];
-  allChapterVerses: { [chapter: string]: { [verse: string]: string } }; // 👈 added
+  allChapterVerses: { [chapter: string]: { [verse: string]: string } };
 }
 
 export const ReadingPane = ({
