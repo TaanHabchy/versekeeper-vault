@@ -27,7 +27,13 @@ export const useBibleStorage = () => {
         variant: 'destructive'
       });
     } else {
-      setFolders(data || []);
+      const mappedFolders = (data || []).map(f => ({
+        id: String(f.id),
+        name: f.name,
+        description: f.description || undefined,
+        createdAt: new Date(f.created_at).getTime()
+      }));
+      setFolders(mappedFolders);
     }
     setLoading(false);
   };
@@ -45,7 +51,17 @@ export const useBibleStorage = () => {
         variant: 'destructive'
       });
     } else {
-      setSavedVerses(data || []);
+      const mappedVerses = (data || []).map(v => ({
+        id: String(v.id),
+        folderId: String(v.folder_id),
+        book: v.book,
+        chapter: v.chapter,
+        verse: v.verse,
+        text: v.text,
+        notes: v.notes || undefined,
+        createdAt: new Date(v.created_at).getTime()
+      }));
+      setSavedVerses(mappedVerses);
     }
   };
 
@@ -53,16 +69,13 @@ export const useBibleStorage = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const newFolder = {
-      user_id: user.id,
-      name,
-      description,
-      created_at: Date.now(),
-    };
-
     const { data, error } = await supabase
       .from('folders')
-      .insert(newFolder)
+      .insert({
+        user_id: user.id,
+        name,
+        description,
+      })
       .select()
       .single();
 
@@ -75,15 +88,22 @@ export const useBibleStorage = () => {
       return null;
     }
 
-    setFolders([data, ...folders]);
-    return data;
+    const mappedFolder: Folder = {
+      id: String(data.id),
+      name: data.name,
+      description: data.description || undefined,
+      createdAt: new Date(data.created_at).getTime()
+    };
+
+    setFolders([mappedFolder, ...folders]);
+    return mappedFolder;
   };
 
   const deleteFolder = async (folderId: string) => {
     const { error } = await supabase
       .from('folders')
       .delete()
-      .eq('id', folderId);
+      .eq('id', parseInt(folderId));
 
     if (error) {
       toast({
@@ -102,20 +122,17 @@ export const useBibleStorage = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const newVerse = {
-      user_id: user.id,
-      folder_id: folderId,
-      book,
-      chapter,
-      verse,
-      text,
-      notes,
-      created_at: Date.now(),
-    };
-
     const { data, error } = await supabase
       .from('saved_verses')
-      .insert(newVerse)
+      .insert({
+        user_id: user.id,
+        folder_id: parseInt(folderId),
+        book,
+        chapter,
+        verse,
+        text,
+        notes,
+      })
       .select()
       .single();
 
@@ -128,14 +145,25 @@ export const useBibleStorage = () => {
       return;
     }
 
-    setSavedVerses([data, ...savedVerses]);
+    const mappedVerse: SavedVerse = {
+      id: String(data.id),
+      folderId: String(data.folder_id),
+      book: data.book,
+      chapter: data.chapter,
+      verse: data.verse,
+      text: data.text,
+      notes: data.notes || undefined,
+      createdAt: new Date(data.created_at).getTime()
+    };
+
+    setSavedVerses([mappedVerse, ...savedVerses]);
   };
 
   const deleteVerse = async (verseId: string) => {
     const { error } = await supabase
       .from('saved_verses')
       .delete()
-      .eq('id', verseId);
+      .eq('id', parseInt(verseId));
 
     if (error) {
       toast({
@@ -152,8 +180,8 @@ export const useBibleStorage = () => {
   const moveVerse = async (verseId: string, newFolderId: string) => {
     const { error } = await supabase
       .from('saved_verses')
-      .update({ folder_id: newFolderId })
-      .eq('id', verseId);
+      .update({ folder_id: parseInt(newFolderId) })
+      .eq('id', parseInt(verseId));
 
     if (error) {
       toast({
