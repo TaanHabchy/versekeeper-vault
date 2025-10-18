@@ -56,6 +56,15 @@ export const ReadingPane = ({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const chapterRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
+  // Scroll to chapter when chapter prop changes
+  useEffect(() => {
+    if (chapter && chapterRefs.current[chapter]) {
+      const element = chapterRefs.current[chapter];
+      element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [chapter]);
+
+  // Auto-update selected chapter based on scroll position
   useEffect(() => {
     const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
     if (!scrollContainer) return;
