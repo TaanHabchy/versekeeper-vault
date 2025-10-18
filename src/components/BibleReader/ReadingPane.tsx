@@ -59,22 +59,20 @@ export const ReadingPane = ({
   // Scroll to chapter when chapter prop changes
   useEffect(() => {
     if (chapter && chapterRefs.current[chapter]) {
-      const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+      const scrollContainer = scrollAreaRef.current?.querySelector(
+          '[data-radix-scroll-area-viewport]'
+      ) as HTMLElement | null;
       const element = chapterRefs.current[chapter];
-      
+
       if (scrollContainer && element) {
-        const containerRect = scrollContainer.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-        const scrollTop = scrollContainer.scrollTop;
-        const elementTop = elementRect.top - containerRect.top + scrollTop;
-        
         scrollContainer.scrollTo({
-          top: elementTop - 32, // 32px offset for padding
-          behavior: 'smooth'
+          top: element.offsetTop - 32, // offset for padding
+          behavior: 'smooth',
         });
       }
     }
   }, [chapter]);
+
 
   // Auto-update selected chapter based on scroll position
   useEffect(() => {
