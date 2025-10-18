@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Bookmark, BookmarkCheck, Search } from 'lucide-react';
@@ -34,6 +34,7 @@ interface ReadingPaneProps {
   onSearch: () => void;
   chapters: string[];
   allChapterVerses: { [chapter: string]: { [verse: string]: string } };
+  onChapterChange: (chapter: string) => void;
 }
 
 export const ReadingPane = ({
@@ -45,6 +46,7 @@ export const ReadingPane = ({
                               onSearch,
                               chapters,
                               allChapterVerses,
+                              onChapterChange,
                             }: ReadingPaneProps) => {
   const [selectedVerse, setSelectedVerse] = useState<{
     verse: string;
@@ -52,6 +54,36 @@ export const ReadingPane = ({
   } | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const chapterRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+
+  useEffect(() => {
+    const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const containerHeight = scrollContainer.clientHeight;
+      const midPoint = scrollTop + containerHeight / 3;
+
+      for (const ch of chapters) {
+        const element = chapterRefs.current[ch];
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const containerRect = scrollContainer.getBoundingClientRect();
+          const elementTop = rect.top - containerRect.top + scrollTop;
+          const elementBottom = elementTop + rect.height;
+
+          if (elementTop <= midPoint && elementBottom > midPoint) {
+            onChapterChange(ch);
+            break;
+          }
+        }
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [chapters, onChapterChange]);
 
   if (!book || !chapters || chapters.length === 0) {
     return (
@@ -106,6 +138,7 @@ export const ReadingPane = ({
               return (
                   <section
                       key={ch}
+                      ref={(el) => { chapterRefs.current[ch] = el; }}
                       className="my-12 snap-start scroll-mt-8 p-4 bg-background rounded-xl shadow-sm"
                   >
                     <h2 className="text-xl font-semibold mb-6">

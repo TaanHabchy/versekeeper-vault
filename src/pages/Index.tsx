@@ -128,6 +128,7 @@ const Index = () => {
         onSearch={() => setIsSearchOpen(true)}
         chapters={chapters}
         allChapterVerses={allChapterVerses}
+        onChapterChange={setSelectedChapter}
       />
       
       <SavedVersesSidebar 

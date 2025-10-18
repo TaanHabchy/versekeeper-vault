@@ -9,8 +9,8 @@ interface ChaptersListProps {
 
 export const ChaptersList = ({ chapters, selectedChapter, onSelectChapter }: ChaptersListProps) => {
   return (
-    <div className="w-20 border-r border-border bg-card">
-      <ScrollArea className="h-[calc(100vh-5rem)]">
+    <div className="w-20 border-r border-border bg-card h-full">
+      <ScrollArea className="h-full">
         <div className="p-2 space-y-1">
           {chapters.map((chapter) => (
             <button
