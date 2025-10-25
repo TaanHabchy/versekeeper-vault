@@ -4,6 +4,7 @@ import {Button} from '@/components/ui/button';
 import {BookmarkCheck, Search, Share} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {Folder} from '@/types/bible';
+import {useToast} from '@/hooks/use-toast';
 
 interface ReadingPaneProps {
   book: string | null;
@@ -39,6 +40,31 @@ export const ReadingPane = ({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const chapterRefs = useRef<{ [key: string]: HTMLElement | null }>({});
   const [zen, setZen] = useState(false);
+  const { toast } = useToast();
+
+  const handleShareVerse = async (book: string, chapter: string, verse: string, text: string) => {
+    const verseReference = `${book} ${chapter}:${verse}`;
+    const shareText = `"${text}"\n\n${verseReference}`;
+    const shareUrl = `${window.location.origin}?book=${encodeURIComponent(book)}&chapter=${chapter}&verse=${verse}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: verseReference,
+          text: shareText,
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+        toast({
+          title: "Copied to clipboard",
+          description: "Verse link copied successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
 
   useEffect(() => {
     if (chapter && chapterRefs.current[chapter]) {
@@ -161,7 +187,10 @@ export const ReadingPane = ({
                                      >
                                   {text}
                                 </p>
-                                <Share className={'h-4 w-4 opacity-0 group-hover:opacity-100 cursor-pointer'}></Share>
+                                <Share 
+                                  className="h-4 w-4 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity" 
+                                  onClick={() => handleShareVerse(book, ch, verse, text)}
+                                />
                               </div>
                             </div>
                         );
