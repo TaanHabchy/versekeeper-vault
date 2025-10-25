@@ -38,6 +38,7 @@ export const ReadingPane = ({
                             }: ReadingPaneProps) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const chapterRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const [zen, setZen] = useState(false);
 
   useEffect(() => {
     if (chapter && chapterRefs.current[chapter]) {
@@ -89,17 +90,22 @@ export const ReadingPane = ({
   }
 
   return (
-      <div className="flex-1 flex flex-col bg-background">
-        <div className="border-b border-border p-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">{book}</h1>
+      <div className={cn(
+          "flex flex-col bg-background",
+          zen ? "fixed inset-0 z-50 h-full" : "flex-1"
+      )}>
+        <div className=" p-4 flex items-center justify-between">
+          <h1 className={cn(
+              "text-2xl font-bold text-foreground ",
+              zen ? "opacity-0" : ""
+          )}>{book}</h1>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <BookmarkCheck className="h-4 w-4 mr-2" />
-              Read
-            </Button>
-            <Button variant="outline" size="sm" onClick={onSearch}>
-              <Search className="h-4 w-4 mr-2" />
+            {!zen ? <Button variant="outline" size="sm" onClick={onSearch}>
+              <Search className="h-4 w-4 mr-2"/>
               Search
+            </Button> : null}
+            <Button variant="outline" size="sm" onClick={() => setZen(!zen)}>
+              Zen
             </Button>
           </div>
         </div>
