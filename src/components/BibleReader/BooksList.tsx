@@ -10,10 +10,7 @@ interface BooksListProps {
 export const BooksList = ({ books, selectedBook, onSelectBook }: BooksListProps) => {
   return (
     <div className="w-48 border-r border-border bg-card">
-      <div className="p-4 border-b border-border">
-        <h2 className="font-semibold text-sm text-muted-foreground">Old Testament</h2>
-      </div>
-      <ScrollArea className="h-[calc(100vh-5rem)]">
+      <ScrollArea className="h-[100vh]">
         <div className="p-2">
           {books.map((book) => (
             <button

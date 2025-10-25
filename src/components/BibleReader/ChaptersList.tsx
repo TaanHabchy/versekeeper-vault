@@ -19,7 +19,7 @@ export const ChaptersList = ({ chapters, selectedChapter, onSelectChapter }: Cha
               className={cn(
                 "w-full px-3 py-2 rounded text-sm font-medium transition-colors",
                 selectedChapter === chapter
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-secondary"
                   : "text-foreground hover:bg-muted"
               )}
             >

@@ -81,17 +81,6 @@ const Index = () => {
     setSelectedChapter(chapter);
   };
 
-  const handleNextChapter = () => {
-    if (!selectedBook || !selectedChapter) return;
-    
-    const currentChapters = Object.keys(bible[selectedBook]);
-    const currentIndex = currentChapters.indexOf(selectedChapter);
-    
-    if (currentIndex < currentChapters.length - 1) {
-      setSelectedChapter(currentChapters[currentIndex + 1]);
-    }
-  };
-
   if (!user) {
     return null;
   }
@@ -126,7 +115,7 @@ const Index = () => {
         selectedFolderId={selectedFolderId}
       />
       
-      <SavedVersesSidebar 
+      <SavedVersesSidebar
         folders={folders}
         savedVerses={savedVerses}
         selectedFolderId={selectedFolderId}

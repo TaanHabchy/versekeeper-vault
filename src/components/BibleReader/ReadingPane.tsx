@@ -36,10 +36,6 @@ export const ReadingPane = ({
                               onChapterChange,
                               selectedFolderId,
                             }: ReadingPaneProps) => {
-  const [selectedVerse, setSelectedVerse] = useState<{
-    verse: string;
-    text: string;
-  } | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const chapterRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
@@ -52,6 +48,7 @@ export const ReadingPane = ({
       const element = chapterRefs.current[chapter];
 
       if (scrollContainer && element) {
+        console.log(chapterRefs)
         scrollContainer.scrollTo({
           top: element.offsetTop - 32, // offset for padding
           behavior: 'smooth',
@@ -162,7 +159,7 @@ export const ReadingPane = ({
                                     className={cn(
                                         "text-foreground leading-relaxed flex-1 hover:bg-gray-50 " +
                                         "rounded-lg px-2 cursor-pointer",
-                                        isSaved && 'bg-blue-50'
+                                        isSaved && 'bg-secondary'
                                     )}
                                      >
                                   {text}
