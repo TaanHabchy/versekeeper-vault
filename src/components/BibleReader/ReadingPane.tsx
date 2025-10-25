@@ -1,23 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { Bookmark, BookmarkCheck, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Folder } from '@/types/bible';
+import {useEffect, useRef, useState} from 'react';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {Button} from '@/components/ui/button';
+import {BookmarkCheck, Search} from 'lucide-react';
+import {cn} from '@/lib/utils';
+import {Folder} from '@/types/bible';
 
 interface ReadingPaneProps {
   book: string | null;
@@ -35,6 +21,7 @@ interface ReadingPaneProps {
   chapters: string[];
   allChapterVerses: { [chapter: string]: { [verse: string]: string } };
   onChapterChange: (chapter: string) => void;
+  selectedFolderId: string | null;
 }
 
 export const ReadingPane = ({
@@ -47,12 +34,12 @@ export const ReadingPane = ({
                               chapters,
                               allChapterVerses,
                               onChapterChange,
+                              selectedFolderId,
                             }: ReadingPaneProps) => {
   const [selectedVerse, setSelectedVerse] = useState<{
     verse: string;
     text: string;
   } | null>(null);
-  const [selectedFolderId, setSelectedFolderId] = useState<string>('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const chapterRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
@@ -74,7 +61,6 @@ export const ReadingPane = ({
   }, [chapter]);
 
 
-  // Auto-update selected chapter based on scroll position
   useEffect(() => {
     const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
     if (!scrollContainer) return;
@@ -113,20 +99,6 @@ export const ReadingPane = ({
         </div>
     );
   }
-
-  const handleSaveVerse = () => {
-    if (selectedVerse && selectedFolderId && book && chapter) {
-      onSaveVerse(
-          book,
-          parseInt(chapter),
-          parseInt(selectedVerse.verse),
-          selectedVerse.text,
-          selectedFolderId
-      );
-      setSelectedVerse(null);
-      setSelectedFolderId('');
-    }
-  };
 
   return (
       <div className="flex-1 flex flex-col bg-background">
@@ -175,75 +147,26 @@ export const ReadingPane = ({
                           {verse}
                         </span>
                               <div className="flex-1 flex items-start gap-2">
-                                <p className="text-foreground leading-relaxed flex-1">
+                                <p    onClick={() => {
+                                  if (selectedFolderId && book && chapter) {
+                                    onSaveVerse(
+                                        book,
+                                        parseInt(chapter),
+                                        parseInt(verse),
+                                        text,
+                                        selectedFolderId
+                                    );
+                                  }
+                                }
+                                }
+                                    className={cn(
+                                        "text-foreground leading-relaxed flex-1 hover:bg-gray-50 " +
+                                        "rounded-lg px-2 cursor-pointer",
+                                        isSaved && 'bg-blue-50'
+                                    )}
+                                     >
                                   {text}
                                 </p>
-                                <Dialog
-                                    open={selectedVerse?.verse === verse}
-                                    onOpenChange={(open) =>
-                                        !open && setSelectedVerse(null)
-                                    }
-                                >
-                                  <DialogTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className={cn(
-                                            'opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0',
-                                            isSaved && 'opacity-100'
-                                        )}
-                                        onClick={() =>
-                                            setSelectedVerse({ verse, text })
-                                        }
-                                    >
-                                      {isSaved ? (
-                                          <BookmarkCheck className="h-4 w-4 text-accent" />
-                                      ) : (
-                                          <Bookmark className="h-4 w-4" />
-                                      )}
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>Save Verse</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="space-y-4">
-                                      <div className="p-4 bg-muted rounded-md">
-                                        <p className="text-sm font-semibold text-primary mb-2">
-                                          {book} {ch}:{verse}
-                                        </p>
-                                        <p className="text-sm text-foreground">
-                                          {text}
-                                        </p>
-                                      </div>
-                                      <Select
-                                          value={selectedFolderId}
-                                          onValueChange={setSelectedFolderId}
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Select a collection" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {folders.map((folder) => (
-                                              <SelectItem
-                                                  key={folder.id}
-                                                  value={folder.id}
-                                              >
-                                                {folder.name}
-                                              </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                      <Button
-                                          onClick={handleSaveVerse}
-                                          disabled={!selectedFolderId}
-                                          className="w-full"
-                                      >
-                                        Save to Collection
-                                      </Button>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
                               </div>
                             </div>
                         );

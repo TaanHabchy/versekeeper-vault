@@ -96,22 +96,12 @@ export const SavedVersesSidebar = ({
         </div>
 
         <div className="space-y-1">
-          <button
-            onClick={() => onSelectFolder(null)}
-            className={cn(
-              "w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors",
-              selectedFolderId === null
-                ? "bg-accent/10 text-accent font-medium"
-                : "text-foreground hover:bg-muted"
-            )}
-          >
-            <FolderOpen className="h-4 w-4" />
-            All Verses
-          </button>
           {folders.map((folder) => (
             <div key={folder.id} className="flex items-center gap-1">
               <button
-                onClick={() => onSelectFolder(folder.id)}
+                onClick={() => {
+                  onSelectFolder(folder.id)
+                }}
                 className={cn(
                   "flex-1 flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors",
                   selectedFolderId === folder.id

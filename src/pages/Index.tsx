@@ -98,12 +98,6 @@ const Index = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/*<div className="absolute top-4 right-4 z-50">*/}
-      {/*  <Button variant="outline" size="sm" onClick={handleLogout}>*/}
-      {/*    <LogOut className="h-4 w-4 mr-2" />*/}
-      {/*    Logout*/}
-      {/*  </Button>*/}
-      {/*</div>*/}
       
       <BooksList 
         books={books} 
@@ -129,6 +123,7 @@ const Index = () => {
         chapters={chapters}
         allChapterVerses={allChapterVerses}
         onChapterChange={setSelectedChapter}
+        selectedFolderId={selectedFolderId}
       />
       
       <SavedVersesSidebar 
