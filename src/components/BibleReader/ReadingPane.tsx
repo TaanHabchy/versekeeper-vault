@@ -39,21 +39,12 @@ export const ReadingPane = ({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const chapterRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
-  // Scroll to chapter when chapter prop changes
   useEffect(() => {
     if (chapter && chapterRefs.current[chapter]) {
-      const scrollContainer = scrollAreaRef.current?.querySelector(
-          '[data-radix-scroll-area-viewport]'
-      ) as HTMLElement | null;
-      const element = chapterRefs.current[chapter];
-
-      if (scrollContainer && element) {
-        console.log(chapterRefs)
-        scrollContainer.scrollTo({
-          top: element.offsetTop - 32, // offset for padding
-          behavior: 'smooth',
-        });
-      }
+      chapterRefs.current[chapter]?.scrollIntoView({
+        behavior: 'instant',
+        block: 'start'
+      });
     }
   }, [chapter]);
 
@@ -129,7 +120,7 @@ export const ReadingPane = ({
                       ref={(el) => { chapterRefs.current[ch] = el; }}
                       className="my-12 snap-start scroll-mt-8 p-4 bg-background rounded-xl shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold mb-6">
+                    <h2 className="text-xl font-semibold mb-6 text-accent">
                       {book} {ch}
                     </h2>
 
@@ -159,7 +150,7 @@ export const ReadingPane = ({
                                     className={cn(
                                         "text-foreground leading-relaxed flex-1 hover:bg-gray-50 " +
                                         "rounded-lg px-2 cursor-pointer",
-                                        isSaved && 'bg-secondary'
+                                        isSaved && 'bg-accent/10'
                                     )}
                                      >
                                   {text}

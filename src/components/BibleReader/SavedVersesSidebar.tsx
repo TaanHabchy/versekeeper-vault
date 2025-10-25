@@ -110,7 +110,7 @@ export const SavedVersesSidebar = ({
                 )}
               >
                 <FolderOpen className="h-4 w-4" />
-                {folder.name}
+                {folder.name}{selectedFolderId === folder.id ? " • " + filteredVerses.length : null}
               </button>
               <Button
                 variant="ghost"
@@ -126,11 +126,6 @@ export const SavedVersesSidebar = ({
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="p-4 pb-2">
-          <h3 className="font-semibold text-sm text-foreground">
-            Saved Verses ({filteredVerses.length})
-          </h3>
-        </div>
         <ScrollArea className="flex-1 px-4">
           <div className="space-y-3 pb-4">
             {filteredVerses.map((verse) => (

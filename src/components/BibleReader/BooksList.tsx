@@ -19,7 +19,7 @@ export const BooksList = ({ books, selectedBook, onSelectBook }: BooksListProps)
               className={cn(
                 "w-full text-left px-3 py-2 rounded text-sm transition-colors",
                 selectedBook === book
-                  ? "bg-secondary text-secondary-foreground font-medium"
+                  ? "bg-accent/10 text-accent"
                   : "text-foreground hover:bg-muted"
               )}
             >
