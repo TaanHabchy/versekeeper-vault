@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import {Button} from '@/components/ui/button';
-import {BookmarkCheck, Search} from 'lucide-react';
+import {BookmarkCheck, Search, Share} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {Folder} from '@/types/bible';
 
@@ -161,6 +161,7 @@ export const ReadingPane = ({
                                      >
                                   {text}
                                 </p>
+                                <Share className={'h-4 w-4 opacity-0 group-hover:opacity-100 cursor-pointer'}></Share>
                               </div>
                             </div>
                         );
