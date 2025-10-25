@@ -81,7 +81,7 @@ export const ReadingPane = ({
 
   if (!book || !chapters || chapters.length === 0) {
     return (
-        <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="flex-1 flex items-center justify-center bg-card">
           <p className="text-muted-foreground">
             Select a book and chapter to read
           </p>
@@ -91,7 +91,7 @@ export const ReadingPane = ({
 
   return (
       <div className={cn(
-          "flex flex-col bg-background",
+          "flex flex-col bg-card",
           zen ? "fixed inset-0 z-50 h-full" : "flex-1"
       )}>
         <div className=" p-4 flex items-center justify-between">
@@ -124,7 +124,7 @@ export const ReadingPane = ({
                   <section
                       key={ch}
                       ref={(el) => { chapterRefs.current[ch] = el; }}
-                      className="my-12 snap-start scroll-mt-8 p-4 bg-background rounded-xl shadow-sm"
+                      className="my-12 snap-start scroll-mt-8 p-4 bg-card rounded-xl shadow-sm"
                   >
                     <h2 className="text-xl font-semibold mb-6 text-accent">
                       {book} {ch}
@@ -142,7 +142,7 @@ export const ReadingPane = ({
                         </span>
                               <div className="flex-1 flex items-start gap-2">
                                 <p    onClick={() => {
-                                  if (selectedFolderId && book && chapter) {
+                                  if (selectedFolderId && book && chapter && !isSaved) {
                                     onSaveVerse(
                                         book,
                                         parseInt(chapter),

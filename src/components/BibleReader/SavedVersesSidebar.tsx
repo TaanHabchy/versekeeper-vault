@@ -49,12 +49,7 @@ export const SavedVersesSidebar = ({
 
   return (
     <div className="w-80 border-l border-border bg-card flex flex-col">
-      <div className="p-4 border-b border-border flex items-center gap-2">
-        <Bookmark className="h-5 w-5 text-accent" />
-        <h2 className="font-semibold text-foreground flex-1">Saved & Collections</h2>
-      </div>
-
-      <div className="p-4 border-b border-border">
+      <div className="p-4 mb-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-sm text-foreground">Collections</h3>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -109,7 +104,6 @@ export const SavedVersesSidebar = ({
                     : "text-foreground hover:bg-muted"
                 )}
               >
-                <FolderOpen className="h-4 w-4" />
                 {folder.name}{selectedFolderId === folder.id ? " • " + filteredVerses.length : null}
               </button>
               <Button
@@ -131,7 +125,7 @@ export const SavedVersesSidebar = ({
             {filteredVerses.map((verse) => (
               <div
                 key={verse.id}
-                className="p-3 bg-muted rounded-md space-y-2 group cursor-pointer hover:bg-muted/80 transition-colors"
+                className="p-3 bg-background rounded-md space-y-2 group cursor-pointer hover:bg-muted/80 transition-colors"
                 onClick={() => onVerseClick(verse.book, verse.chapter)}
               >
                 <div className="flex items-start justify-between">
