@@ -11,7 +11,8 @@ import { useBibleStorage } from '@/hooks/useBibleStorage';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Book, List, Bookmark, LogOut } from 'lucide-react';
 
 const Index = () => {
   const bible = bibleData as BibleData;
@@ -23,6 +24,9 @@ const Index = () => {
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isBooksOpen, setIsBooksOpen] = useState(false);
+  const [isChaptersOpen, setIsChaptersOpen] = useState(false);
+  const [isSavedOpen, setIsSavedOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -69,6 +73,8 @@ const Index = () => {
   const handleSelectBook = (book: string) => {
     setSelectedBook(book);
     setSelectedChapter(Object.keys(bible[book])[0]);
+    setIsBooksOpen(false);
+    setIsChaptersOpen(true);
   };
 
   const handleVerseClick = (book: string, chapter: number) => {
@@ -86,20 +92,95 @@ const Index = () => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      
-      <BooksList 
-        books={books} 
-        selectedBook={selectedBook} 
-        onSelectBook={handleSelectBook} 
-      />
+    <div className="flex h-screen overflow-hidden flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-3 border-b border-border bg-card">
+        <div className="flex items-center gap-2">
+          <Sheet open={isBooksOpen} onOpenChange={setIsBooksOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Book className="h-4 w-4 mr-2" />
+                {selectedBook || 'Books'}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] p-0">
+              <BooksList 
+                books={books} 
+                selectedBook={selectedBook} 
+                onSelectBook={handleSelectBook} 
+              />
+            </SheetContent>
+          </Sheet>
+
+          {selectedBook && (
+            <Sheet open={isChaptersOpen} onOpenChange={setIsChaptersOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <List className="h-4 w-4 mr-2" />
+                  {selectedChapter || 'Ch'}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[200px] p-0">
+                <ChaptersList 
+                  chapters={chapters} 
+                  selectedChapter={selectedChapter} 
+                  onSelectChapter={(ch) => {
+                    setSelectedChapter(ch);
+                    setIsChaptersOpen(false);
+                  }} 
+                />
+              </SheetContent>
+            </Sheet>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Sheet open={isSavedOpen} onOpenChange={setIsSavedOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Bookmark className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[320px] p-0">
+              <SavedVersesSidebar
+                folders={folders}
+                savedVerses={savedVerses}
+                selectedFolderId={selectedFolderId}
+                onSelectFolder={setSelectedFolderId}
+                onCreateFolder={createFolder}
+                onDeleteFolder={deleteFolder}
+                onDeleteVerse={deleteVerse}
+                onVerseClick={(book, chapter) => {
+                  handleVerseClick(book, chapter);
+                  setIsSavedOpen(false);
+                }}
+              />
+            </SheetContent>
+          </Sheet>
+
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Desktop Sidebars */}
+      <div className="hidden md:block">
+        <BooksList 
+          books={books} 
+          selectedBook={selectedBook} 
+          onSelectBook={handleSelectBook} 
+        />
+      </div>
       
       {selectedBook && (
-        <ChaptersList 
-          chapters={chapters} 
-          selectedChapter={selectedChapter} 
-          onSelectChapter={setSelectedChapter} 
-        />
+        <div className="hidden md:block">
+          <ChaptersList 
+            chapters={chapters} 
+            selectedChapter={selectedChapter} 
+            onSelectChapter={setSelectedChapter} 
+          />
+        </div>
       )}
       
       <ReadingPane 
@@ -115,16 +196,18 @@ const Index = () => {
         selectedFolderId={selectedFolderId}
       />
       
-      <SavedVersesSidebar
-        folders={folders}
-        savedVerses={savedVerses}
-        selectedFolderId={selectedFolderId}
-        onSelectFolder={setSelectedFolderId}
-        onCreateFolder={createFolder}
-        onDeleteFolder={deleteFolder}
-        onDeleteVerse={deleteVerse}
-        onVerseClick={handleVerseClick}
-      />
+      <div className="hidden md:block">
+        <SavedVersesSidebar
+          folders={folders}
+          savedVerses={savedVerses}
+          selectedFolderId={selectedFolderId}
+          onSelectFolder={setSelectedFolderId}
+          onCreateFolder={createFolder}
+          onDeleteFolder={deleteFolder}
+          onDeleteVerse={deleteVerse}
+          onVerseClick={handleVerseClick}
+        />
+      </div>
 
       <SearchDialog
         open={isSearchOpen}

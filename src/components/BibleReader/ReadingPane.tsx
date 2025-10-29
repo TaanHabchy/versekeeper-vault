@@ -120,15 +120,15 @@ export const ReadingPane = ({
           "flex flex-col bg-card",
           zen ? "fixed inset-0 z-50 h-full" : "flex-1"
       )}>
-        <div className=" p-4 flex items-center justify-between">
+        <div className="p-3 md:p-4 flex items-center justify-between border-b md:border-b-0 border-border">
           <h1 className={cn(
-              "text-2xl font-bold text-foreground ",
+              "text-lg md:text-2xl font-bold text-foreground",
               zen ? "opacity-0" : ""
           )}>{book}</h1>
           <div className="flex gap-2">
             {!zen ? <Button variant="outline" size="sm" onClick={onSearch}>
-              <Search className="h-4 w-4 mr-2"/>
-              Search
+              <Search className="h-4 w-4 md:mr-2"/>
+              <span className="hidden md:inline">Search</span>
             </Button> : null}
             <Button variant="outline" size="sm" onClick={() => setZen(!zen)}>
               Zen
@@ -139,7 +139,7 @@ export const ReadingPane = ({
         {/* Main scroll container */}
         <ScrollArea
             ref={scrollAreaRef}
-            className="flex-1 p-8 overflow-y-scroll snap-y snap-mandatory"
+            className="flex-1 p-4 md:p-8 overflow-y-scroll snap-y snap-mandatory"
         >
           <div className="max-w-3xl mx-auto">
             {chapters.map((ch, index) => {
@@ -150,23 +150,23 @@ export const ReadingPane = ({
                   <section
                       key={ch}
                       ref={(el) => { chapterRefs.current[ch] = el; }}
-                      className="my-12 snap-start scroll-mt-8 p-4 bg-card rounded-xl shadow-sm"
+                      className="my-6 md:my-12 snap-start scroll-mt-8 p-3 md:p-4 bg-card rounded-xl shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold mb-6 text-accent">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-accent">
                       {book} {ch}
                     </h2>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3 md:space-y-4">
                       {Object.entries(verses).map(([verse, text]) => {
                         const verseKey = `${book}-${ch}-${verse}`;
                         const isSaved = savedVerseKeys.has(verseKey);
 
                         return (
-                            <div key={verse} className="group flex gap-4 items-start">
-                        <span className="text-sm font-semibold text-primary min-w-[2rem]">
+                            <div key={verse} className="group flex gap-2 md:gap-4 items-start">
+                        <span className="text-xs md:text-sm font-semibold text-primary min-w-[1.5rem] md:min-w-[2rem]">
                           {verse}
                         </span>
-                              <div className="flex-1 flex items-start gap-2">
+                              <div className="flex-1 flex items-start gap-1 md:gap-2">
                                 <p    onClick={() => {
                                   if (selectedFolderId && book && chapter && !isSaved) {
                                     onSaveVerse(
@@ -180,15 +180,15 @@ export const ReadingPane = ({
                                 }
                                 }
                                     className={cn(
-                                        "text-foreground leading-relaxed flex-1 hover:bg-gray-50 " +
-                                        "rounded-lg px-2 cursor-pointer",
+                                        "text-sm md:text-base text-foreground leading-relaxed flex-1 hover:bg-muted/50 " +
+                                        "rounded-lg px-2 py-1 cursor-pointer",
                                         isSaved && 'bg-accent/10'
                                     )}
                                      >
                                   {text}
                                 </p>
                                 <Share 
-                                  className="h-4 w-4 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity" 
+                                  className="h-3 w-3 md:h-4 md:w-4 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity flex-shrink-0" 
                                   onClick={() => handleShareVerse(book, ch, verse, text)}
                                 />
                               </div>
